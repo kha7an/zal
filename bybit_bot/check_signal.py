@@ -128,15 +128,15 @@ def main():
         print(f"  Trend All Down: {down_count} svechej")
     print()
 
-    # Replay: chto i kak bylo by (po dnjam)
+    # Replay: chto i kak bylo by (po dnjam), poslednie 14 dnej
     replay = replay_trades(res)
     replay["date_str"] = replay["date"].dt.strftime("%Y-%m-%d")
     signal_txt = {1: "Up", -1: "Down", 0: "no"}
     replay["signal_txt"] = replay["signal"].map(signal_txt)
-    # Slice 2026-01-06 .. 2026-02-12 (period kotoryj ty pokazal)
-    mask = (replay["date_str"] >= "2026-01-06") & (replay["date_str"] <= "2026-02-12")
-    slice_replay = replay.loc[mask]
-    print("Replay 2026-01-06 .. 2026-02-12 (chto i kak bylo by):")
+    slice_replay = replay.tail(14)
+    first_d = slice_replay["date_str"].iloc[0]
+    last_d = slice_replay["date_str"].iloc[-1]
+    print(f"Replay {first_d} .. {last_d} (poslednie 14 dnej, chto i kak bylo by):")
     print("-" * 70)
     for _, row in slice_replay.iterrows():
         print(f"  {row['date_str']}  close={row['close']:.0f}  signal={row['signal_txt']:3}  action={str(row['action']):25}  posle={row['position_after']}")
