@@ -1,0 +1,7 @@
+.env
+.venv/
+bybit_bot.log
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
