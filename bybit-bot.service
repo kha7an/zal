@@ -1,0 +1,15 @@
+[Unit]
+Description=Bybit bot (proverka signala kazhdyj den v 03:00 MSK)
+After=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/zal
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/opt/zal/.venv/bin/python -m bybit_bot.run_loop
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target

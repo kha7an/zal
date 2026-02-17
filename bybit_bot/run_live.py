@@ -77,11 +77,15 @@ def main():
     position_side = "long" if pos and pos[0] == "Buy" else "short" if pos else None
     action = decide_action(now, prev, position_side)
 
-    log(f"Signal: prev={prev}, now={now}")
+    log(f"Signal: prev={prev}, now={now}  (1=Up, -1=Down, 0=net)")
     log(f"Pozicija na birzhe: {position_side or 'net'}")
     log(f"Reshenie: {action}")
     log(f"Balans: {balance:.2f} USDT, cena: {price}")
     log("")
+
+    order_sent = False
+    order_ok = False
+    order_msg = ""
 
     if action == "open_long":
         log("Dejstvie: otkryt LONG (market). Ustanavlivaem leverage i schitaem razmer pozicii...")
@@ -94,6 +98,8 @@ def main():
         r = open_long(session)
         ret_code = r.get("retCode")
         ret_msg = r.get("retMsg", r)
+        order_sent, order_ok = True, (ret_code == 0)
+        order_msg = str(ret_msg)
         log(f"Rezultat otkrytija LONG: retCode={ret_code}, retMsg={ret_msg}")
         if ret_code == 0:
             log("  orderId: " + str(r.get("result", {}).get("orderId")))
@@ -110,6 +116,8 @@ def main():
         r = open_short(session)
         ret_code = r.get("retCode")
         ret_msg = r.get("retMsg", r)
+        order_sent, order_ok = True, (ret_code == 0)
+        order_msg = str(ret_msg)
         log(f"Rezultat otkrytija SHORT: retCode={ret_code}, retMsg={ret_msg}")
         if ret_code == 0:
             log("  orderId: " + str(r.get("result", {}).get("orderId")))
@@ -121,6 +129,8 @@ def main():
         if r:
             ret_code = r.get("retCode")
             ret_msg = r.get("retMsg", r)
+            order_sent, order_ok = True, (ret_code == 0)
+            order_msg = str(ret_msg)
             log(f"Rezultat zakrytija: retCode={ret_code}, retMsg={ret_msg}")
             if ret_code == 0:
                 log("  orderId: " + str(r.get("result", {}).get("orderId")))
@@ -139,7 +149,14 @@ def main():
             reason = "est SHORT i signal=-1 — derzhim po trendu"
         else:
             reason = f"pozicija={position_side}, signal={now} — reshenie hold po logike decide_action"
+        order_msg = reason
         log(f"Hold — order NE otpravlen, prichina: {reason}.")
+
+    log("")
+    if order_sent:
+        log(f"--- ITOG: signal_now={now}, pozicija={position_side or 'net'}, reshenie={action}. Order otpravlen: {'da, OK' if order_ok else 'da, oshibka'}, retMsg={order_msg[:80]}")
+    else:
+        log(f"--- ITOG: signal_now={now}, pozicija={position_side or 'net'}, reshenie={action}. Sdelka NE otkryta/zakryta, prichina: {order_msg}")
 
 
 if __name__ == "__main__":
