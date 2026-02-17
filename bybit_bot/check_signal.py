@@ -86,9 +86,20 @@ def main():
     action_short = decide_action(now, prev, "short")
 
     signal_label = {1: "Trend All Up", -1: "Trend All Down", 0: "no"}
-    print("Последние 5 свечей (индикатор):")
+    signal_short = {1: "Up", -1: "Down", 0: "no"}
+
+    last5 = res.tail(5)[["date", "close", "signal"]].copy()
+    last5["signal_txt"] = last5["signal"].map(signal_short)
+    print("Signal za poslednie 5 dnej (byl li signal):")
+    print("-" * 50)
+    for _, row in last5.iterrows():
+        print(f"  {row['date'].strftime('%Y-%m-%d')}  close={row['close']:.0f}  signal={row['signal_txt']}")
+    print("-" * 50)
+    print()
+
+    print("Poslednie 5 svechej (indikator TB1/TB2/TB3):")
     print("-" * 70)
-    tail = res.tail(5)[["date", "close", "TrendBar1Confirmed", "TrendBar2Confirmed", "TrendBar3Confirmed", "signal"]]
+    tail = res.tail(5)[["date", "close", "TrendBar1Confirmed", "TrendBar2Confirmed", "TrendBar3Confirmed", "signal"]].copy()
     tail["signal_txt"] = tail["signal"].map(signal_label)
     for _, row in tail.iterrows():
         print(
