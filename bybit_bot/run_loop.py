@@ -39,8 +39,9 @@ def main():
             sec_to = (next_run - now_msk).total_seconds()
             if sec_to > 60:
                 log(f"Sled. proverka: {next_run.strftime('%Y-%m-%d %H:%M:%S')} MSK cherez {int(sec_to // 3600)} ch {int((sec_to % 3600) // 60)} min")
-                while (next_run - datetime.now(MSK)).total_seconds() > 60:
-                    time.sleep(3600)
+                # Spim kuskami, no ne prouskaja okno <= 60 sek do zapuska
+                sleep_sec = max(0, min(3600, sec_to - 60))
+                time.sleep(sleep_sec)
                 continue
             log("--- " + datetime.now(MSK).strftime("%Y-%m-%d %H:%M:%S MSK") + " ---")
             run_live_main()
