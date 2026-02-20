@@ -15,15 +15,14 @@ from bybit_bot.log_helper import log
 
 MSK = ZoneInfo("Europe/Moscow")
 
-# D-svecha na Bybit zakryvaetsja v 00:00 UTC = 03:00 MSK
+# D-svecha na Bybit zakryvaetsja v 00:00 UTC = 03:00 MSK. Zapusk cherez 1 min, chtoby API uzhe otdal zakrytuju svechu.
 CHECK_HOUR_MSK = 3
-CHECK_MINUTE_MSK = 0
-
+CHECK_MINUTE_MSK = 1  # 03:01 MSK = 00:01 UTC — svecha uzhe zakryta
 
 def next_run_msk():
     now = datetime.now(MSK)
     today_run = now.replace(hour=CHECK_HOUR_MSK, minute=CHECK_MINUTE_MSK, second=0, microsecond=0)
-    if now <= today_run:
+    if now < today_run:
         return today_run
     return today_run + timedelta(days=1)
 
@@ -39,12 +38,13 @@ def main():
             sec_to = (next_run - now_msk).total_seconds()
             if sec_to > 60:
                 log(f"Sled. proverka: {next_run.strftime('%Y-%m-%d %H:%M:%S')} MSK cherez {int(sec_to // 3600)} ch {int((sec_to % 3600) // 60)} min")
-                # Spim kuskami, no ne prouskaja okno <= 60 sek do zapuska
                 sleep_sec = max(0, min(3600, sec_to - 60))
                 time.sleep(sleep_sec)
                 continue
             log("--- " + datetime.now(MSK).strftime("%Y-%m-%d %H:%M:%S MSK") + " ---")
             run_live_main()
+            # Odin raz za noch: spim min 65 sek, chtoby sled. iteracija uzhe "zavtra" i ne zapustila run_live vtoroj raz
+            time.sleep(65)
         except KeyboardInterrupt:
             log("Ostanovleno.")
             break
